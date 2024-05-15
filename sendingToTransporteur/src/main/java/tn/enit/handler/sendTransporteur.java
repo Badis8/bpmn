@@ -40,11 +40,12 @@ public class sendTransporteur  implements JobHandler {
                 .credentialsProvider(credentialsProvider)
                 .build()) {
 
-
+                    final Map<String, Object> inputVariables = job.getVariablesAsMap();
+                    final String products = (String) inputVariables.get("demandeRecu");
             //Build the Message Variables
         final Map<String, Object> messageVariables = new HashMap<String, Object>();
-
-        messageVariables.put("articlesToSend", transporteur);
+        
+        messageVariables.put("articlesToSend", products);
  
  
         travelAgencyClient.newPublishMessageCommand()
@@ -54,7 +55,7 @@ public class sendTransporteur  implements JobHandler {
                 .send()
                 .join();
 
-        System.out.println(transporteur + " Demande de réservation bien reçue et voici un autre message envoyé");
+        System.out.println(transporteur + ": Les articles "+products+" ont été emballés et organisés maintenant je vais les envoyer au service de transport");
 
             //Complete the Job
         client.newCompleteCommand(job.getKey()).send().join();

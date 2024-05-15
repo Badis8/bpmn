@@ -4,8 +4,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
- 
-
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
@@ -13,8 +11,8 @@ import io.camunda.zeebe.client.api.worker.JobHandler;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProvider;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProviderBuilder;
 
-public class demandeRecu  implements JobHandler {
-    private static final String MESSAGE_NAME = "demandeRecu";
+public class AuthenticationHandler  implements JobHandler {
+    private static final String MESSAGE_NAME = "articlesToSend";
 
     private static final String ZEEBE_ADDRESS="9c47333b-d9fc-4f05-92c4-5d21c0b5d55e.bru-2.zeebe.camunda.io:443";
 	private static final String ZEEBE_CLIENT_ID="zm7MAUM2.SdCEqyGnaBGgTg0y0~7OQVP";
@@ -24,7 +22,7 @@ public class demandeRecu  implements JobHandler {
     @Override
     public void handle(JobClient client, ActivatedJob job) throws Exception {
         
-        final String demandeRecu = "demandeRecu";
+        final String articlesToSend = "verificationAuth";
  
 
         final OAuthCredentialsProvider credentialsProvider =
@@ -39,26 +37,27 @@ public class demandeRecu  implements JobHandler {
                 .gatewayAddress(ZEEBE_ADDRESS)
                 .credentialsProvider(credentialsProvider)
                 .build()) {
-
                     final Map<String, Object> inputVariables = job.getVariablesAsMap();
-                    final String products = (String) inputVariables.get("products");
+                    final String email = (String) inputVariables.get("email");
+                    final String password = (String) inputVariables.get("password");
+
+
             //Build the Message Variables
         final Map<String, Object> messageVariables = new HashMap<String, Object>();
 
-        messageVariables.put("demandeRecu", products);
+        messageVariables.put("verification",true);
  
- 
-        travelAgencyClient.newPublishMessageCommand()
-                .messageName(MESSAGE_NAME)
-                .correlationKey(demandeRecu)
-                .variables(messageVariables)
-                .send()
-                .join();
-                
-        System.out.println(demandeRecu + " Une demande pour les produits: "+ products +" va etre envoyer au service logistique");
+     
+      
+
+        System.out.println(articlesToSend + " Authentification réussie pour l'email: "+ email +" et le mot de passe: "+password);
 
             //Complete the Job
-        client.newCompleteCommand(job.getKey()).send().join();
+            client.newCompleteCommand(job.getKey())
+            .variables(messageVariables)
+            .send()
+            .join();
+}
         }
     }
-    }
+ 

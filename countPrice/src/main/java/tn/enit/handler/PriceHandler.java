@@ -1,6 +1,5 @@
 package tn.enit.handler;
 
-import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +13,7 @@ import io.camunda.zeebe.client.api.worker.JobHandler;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProvider;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProviderBuilder;
 
-public class bankDecision  implements JobHandler {
+public class PriceHandler  implements JobHandler {
     private static final String MESSAGE_NAME = "articlesToSend";
 
     private static final String ZEEBE_ADDRESS="9c47333b-d9fc-4f05-92c4-5d21c0b5d55e.bru-2.zeebe.camunda.io:443";
@@ -24,8 +23,8 @@ public class bankDecision  implements JobHandler {
 	private static final String ZEEBE_TOKEN_AUDIENCE="zeebe.camunda.io";
     @Override
     public void handle(JobClient client, ActivatedJob job) throws Exception {
-        String csvFilePath = "src\\main\\resources\\cartes.csv";
-        final String articlesToSend = "verificationBanque";
+        String csvFilePath = "src\\main\\resources\\prices.csv";
+        final String articlesToSend = "countPrice";
  
 
         final OAuthCredentialsProvider credentialsProvider =
@@ -41,48 +40,59 @@ public class bankDecision  implements JobHandler {
                 .credentialsProvider(credentialsProvider)
                 .build()) {
                     final Map<String, Object> inputVariables = job.getVariablesAsMap();
-                    final String code = (String) inputVariables.get("articlesToSend");
-                    String card="";
-                    double balance=0;
+                    final String code = (String) inputVariables.get("article");
+
+        System.out.println(code);   
+            //Build the Message Variables
+        final Map<String, Object> messageVariables = new HashMap<String, Object>();
+
+        messageVariables.put("verification",true);
+        String itemCode="";
+        String itemName="";
+        double price=0;
         try (Scanner scanner = new Scanner(new File(csvFilePath))) {
             // Skip the header line (assuming the first line contains column headers)
             if (scanner.hasNextLine()) {
                 scanner.nextLine(); // Skip the header line
             }
+
             // Read each line of the CSV file
             while (scanner.hasNextLine() ) {
                 String line = scanner.nextLine();
                 String[] fields = line.split(",");
                 System.out.println(line);
-                card = fields[0].trim();
-                balance = Double.parseDouble(fields[1].trim());
+                itemCode = fields[0].trim();
+                itemName = fields[1].trim();
+                price = Double.parseDouble(fields[2].trim());
 
-                if (card.equals(code))
+                if (itemCode.equals(code))
                     break;
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }                       
-            final Map<String, Object> messageVariables = new HashMap<String, Object>();
-            double price=(double) inputVariables.get("totalprice");
-            if (card.equals(code))
-            {
-            if(balance>price )
-            {
-
-                messageVariables.put("payement",true);
-                System.out.println(articlesToSend + " payement efféctué avec succés le  solde "+balance+" est supérieur à la somme debitée "+ price);
             }
-            else    
-            {
-                System.out.println(articlesToSend + " echec de payement "+balance+" est inferieur à la somme debitée "+ price);                
-                messageVariables.put("payement",false);
-            }
-        }
-        else{
-            throw new Exception("Carte de credit non existante");
-        }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }           
+        double tp=0;
+        if(inputVariables.get("totalprice") != null)
+        {
+          tp=(double)inputVariables.get("totalprice");
+          System.out.println(tp);   
 
+        }
+        System.out.println(tp);   
+
+        String pdts="";
+        if(inputVariables.get("products") != null)
+        {
+            pdts=(String)inputVariables.get("products");
+        }        System.out.println(pdts);   
+
+        System.out.println(pdts);   
+
+        messageVariables.put("totalprice",tp+ price);
+        messageVariables.put ("products",pdts+", "+itemName);
+
+        messageVariables.put ("finished",(Boolean)inputVariables.get("finished"));
+        System.out.println(articlesToSend + " L'article: " + itemCode + " est ajouté au panier avec le nom: "+ itemName +" et le prix: "+ price );
 
             //Complete the Job
             client.newCompleteCommand(job.getKey())
