@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="8c4dae7" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0" camunda:diagramRelationId="ffd0a725-474b-46ea-8f15-b178a226d21b">
+  <bpmn:process id="Process_de_conge_annuel" name="Demande de congé annuel" isExecutable="true">
+    <bpmn:extensionElements>
+      <zeebe:userTaskForm id="UserTaskForm_3iiijeb">{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.5.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8c4dae7"
+  },
+  "schemaVersion": 16,
+  "id": "Form_DemandeCongeAnnuel",
+  "components": [
+    {
+      "text": "# Demande de congé annuel",
+      "label": "Text view",
+      "type": "text",
+      "layout": {
+        "row": "Row_1wnmeb2",
+        "columns": null
+      },
+      "id": "Field_0amk6cn"
+    },
+    {
+      "subtype": "date",
+      "dateLabel": "Début",
+      "label": "Date time",
+      "type": "datetime",
+      "layout": {
+        "row": "Row_0dgtpy2",
+        "columns": null
+      },
+      "id": "Field_13emwat",
+      "key": "startDate",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "subtype": "date",
+      "dateLabel": "Fin",
+      "label": "Date time",
+      "type": "datetime",
+      "layout": {
+        "row": "Row_08xjvz4",
+        "columns": null
+      },
+      "id": "Field_15r9ss5",
+      "key": "endDate",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Comment",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_1gk6dne",
+        "columns": null
+      },
+      "id": "Field_05nchyn",
+      "key": "textfield_comment"
+    }
+  ],
+  "type": "default"
+}</zeebe:userTaskForm>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="StartEvent_CongeAnnuelDemande" name="Congé annuel demandé">
+      <bpmn:outgoing>Flow_177ir1o</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="EndEvent_CongeAnnuelApprouve" name="Congé annuel approuvé">
+      <bpmn:incoming>Flow_14584sr</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_DemanderCongeAnnuel" name="Demander le congé annuel">
+      <bpmn:extensionElements>
+        <zeebe:formDefinition formId="Form_DemandeCongeAnnuel" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_177ir1o</bpmn:incoming>
+      <bpmn:outgoing>Flow_05cfds6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_05cfds6" sourceRef="Task_DemanderCongeAnnuel" targetRef="Task_Evaluer_la_demande" />
+    <bpmn:userTask id="Task_Evaluer_la_demande" name="Evaluer la demande">
+      <bpmn:extensionElements>
+        <zeebe:formDefinition formId="Form_evaluer_la_demande" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_05cfds6</bpmn:incoming>
+      <bpmn:incoming>Flow_0xrbt7k</bpmn:incoming>
+      <bpmn:outgoing>Flow_0gfbqqo</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_177ir1o" sourceRef="StartEvent_CongeAnnuelDemande" targetRef="Task_DemanderCongeAnnuel" />
+    <bpmn:exclusiveGateway id="Gateway_decision" name="Décision?">
+      <bpmn:incoming>Flow_0gfbqqo</bpmn:incoming>
+      <bpmn:outgoing>Flow_103svrj</bpmn:outgoing>
+      <bpmn:outgoing>Flow_067jkpe</bpmn:outgoing>
+      <bpmn:outgoing>Flow_rejete</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0gfbqqo" sourceRef="Task_Evaluer_la_demande" targetRef="Gateway_decision" />
+    <bpmn:sequenceFlow id="Flow_103svrj" name="Approuvée" sourceRef="Gateway_decision" targetRef="task_envoiERP">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=radio_decision="accepte"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="Activity_007m6ms" name="Fournir des informations supplémentaires">
+      <bpmn:extensionElements>
+        <zeebe:formDefinition formKey="camunda-forms:bpmn:UserTaskForm_3iiijeb" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_067jkpe</bpmn:incoming>
+      <bpmn:outgoing>Flow_0xrbt7k</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_067jkpe" name="Informations supplémentaires" sourceRef="Gateway_decision" targetRef="Activity_007m6ms">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=radio_decision="information_sup"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0xrbt7k" sourceRef="Activity_007m6ms" targetRef="Task_Evaluer_la_demande" />
+    <bpmn:endEvent id="Event_0rqiupo" name="Congé annuel refusé">
+      <bpmn:incoming>Flow_rejete</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_rejete" name="Rejetée" sourceRef="Gateway_decision" targetRef="Event_0rqiupo">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=radio_decision = "rejete"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="task_envoiERP" name="Envoyer les informations des demandes à ERP">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="envoiERP" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_103svrj</bpmn:incoming>
+      <bpmn:outgoing>Flow_14584sr</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_14584sr" sourceRef="task_envoiERP" targetRef="EndEvent_CongeAnnuelApprouve" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_de_conge_annuel">
+      <bpmndi:BPMNShape id="Gateway_14swvxf_di" bpmnElement="Gateway_decision" isMarkerVisible="true">
+        <dc:Bounds x="535" y="225" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="575.5" y="213" width="49" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0rqiupo_di" bpmnElement="Event_0rqiupo">
+        <dc:Bounds x="732" y="92" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="716" y="135" width="69" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0vyv7xi_di" bpmnElement="task_envoiERP">
+        <dc:Bounds x="710" y="200" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1qwhdd3_di" bpmnElement="EndEvent_CongeAnnuelApprouve">
+        <dc:Bounds x="912" y="232" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="896" y="275" width="69" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02nxn45_di" bpmnElement="Task_DemanderCongeAnnuel">
+        <dc:Bounds x="310" y="90" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0nlysz9_di" bpmnElement="Task_Evaluer_la_demande">
+        <dc:Bounds x="310" y="210" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_CongeAnnuelDemande">
+        <dc:Bounds x="172" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="156" y="155" width="69" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1cben9p_di" bpmnElement="Activity_007m6ms">
+        <dc:Bounds x="510" y="360" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_177ir1o_di" bpmnElement="Flow_177ir1o">
+        <di:waypoint x="208" y="130" />
+        <di:waypoint x="310" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05cfds6_di" bpmnElement="Flow_05cfds6">
+        <di:waypoint x="360" y="170" />
+        <di:waypoint x="360" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xrbt7k_di" bpmnElement="Flow_0xrbt7k">
+        <di:waypoint x="560" y="440" />
+        <di:waypoint x="560" y="460" />
+        <di:waypoint x="360" y="460" />
+        <di:waypoint x="360" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gfbqqo_di" bpmnElement="Flow_0gfbqqo">
+        <di:waypoint x="410" y="250" />
+        <di:waypoint x="535" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_103svrj_di" bpmnElement="Flow_103svrj">
+        <di:waypoint x="585" y="250" />
+        <di:waypoint x="710" y="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="621" y="232" width="53" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_067jkpe_di" bpmnElement="Flow_067jkpe">
+        <di:waypoint x="560" y="275" />
+        <di:waypoint x="560" y="360" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="519" y="306" width="81" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_093hcbs_di" bpmnElement="Flow_rejete">
+        <di:waypoint x="560" y="225" />
+        <di:waypoint x="560" y="110" />
+        <di:waypoint x="732" y="110" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="520" y="149" width="39" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14584sr_di" bpmnElement="Flow_14584sr">
+        <di:waypoint x="810" y="250" />
+        <di:waypoint x="912" y="250" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
