@@ -39,13 +39,15 @@ public class SendPayment  implements JobHandler {
                 .gatewayAddress(ZEEBE_ADDRESS)
                 .credentialsProvider(credentialsProvider)
                 .build()) {
-
+                    final Map<String, Object> inputVariables = job.getVariablesAsMap();
+                    final String credit = (String) inputVariables.get("credit");
+                    final String products = (String) inputVariables.get("products");
+                    final double totalprice = (double) inputVariables.get("totalprice");
 
             //Build the Message Variables
         final Map<String, Object> messageVariables = new HashMap<String, Object>();
 
-        messageVariables.put("articlesToSend", articlesToSend);
- 
+        messageVariables.put("articlesToSend", credit);
         System.out.println(articlesToSend);
         travelAgencyClient.newPublishMessageCommand()
                 .messageName(MESSAGE_NAME)
@@ -54,7 +56,7 @@ public class SendPayment  implements JobHandler {
                 .send()
                 .join();
 
-        System.out.println(articlesToSend + " Demande de réservation bien reçue et voici un autre message envoyé");
+        System.out.println(articlesToSend + "Nous avons debiter la carte de credit n= "+credit+" pour l'achats des articles "+products+" avec le prix "+totalprice);
 
             //Complete the Job
         client.newCompleteCommand(job.getKey()).send().join();

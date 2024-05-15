@@ -46,6 +46,10 @@ public class ERPpersistApplication {
 		            .credentialsProvider(credentialsProvider)
 		            .build()) {
 			
+
+							
+
+
 			//Request the Cluster Topology
 			System.out.println("Connected to: " + client.newTopologyRequest().send().join());
 

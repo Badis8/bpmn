@@ -1,9 +1,12 @@
 package tn.enit.handler;
 
+import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
@@ -21,7 +24,7 @@ public class bankDecision  implements JobHandler {
 	private static final String ZEEBE_TOKEN_AUDIENCE="zeebe.camunda.io";
     @Override
     public void handle(JobClient client, ActivatedJob job) throws Exception {
-        
+        String csvFilePath = "src\\main\\resources\\cartes.csv";
         final String articlesToSend = "verificationBanque";
  
 
@@ -37,37 +40,49 @@ public class bankDecision  implements JobHandler {
                 .gatewayAddress(ZEEBE_ADDRESS)
                 .credentialsProvider(credentialsProvider)
                 .build()) {
+                    final Map<String, Object> inputVariables = job.getVariablesAsMap();
+                    final String code = (String) inputVariables.get("articlesToSend");
+                    String card="";
+                    double balance=0;
+        try (Scanner scanner = new Scanner(new File(csvFilePath))) {
+            // Skip the header line (assuming the first line contains column headers)
+            if (scanner.hasNextLine()) {
+                scanner.nextLine(); // Skip the header line
+            }
+            // Read each line of the CSV file
+            while (scanner.hasNextLine() ) {
+                String line = scanner.nextLine();
+                String[] fields = line.split(",");
+                System.out.println(line);
+                card = fields[0].trim();
+                balance = Double.parseDouble(fields[1].trim());
 
+                if (card.equals(code))
+                    break;
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }                       
+            final Map<String, Object> messageVariables = new HashMap<String, Object>();
+            double price=(double) inputVariables.get("totalprice");
+            if (card.equals(code))
+            {
+            if(balance>price )
+            {
 
-            //Build the Message Variables
-        final Map<String, Object> messageVariables = new HashMap<String, Object>();
+                messageVariables.put("payement",true);
+                System.out.println(articlesToSend + " payement efféctué avec succés le  solde "+balance+" est supérieur à la somme debitée "+ price);
+            }
+            else    
+            {
+                System.out.println(articlesToSend + " echec de payement "+balance+" est inferieur à la somme debitée "+ price);                
+                messageVariables.put("payement",false);
+            }
+        }
+        else{
+            throw new Exception("Carte de credit non existante");
+        }
 
-        messageVariables.put("payement", true);
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-     
-      
-
-        System.out.println(articlesToSend + " Demande de réservation bien reçue et voici un autre message envoyé");
 
             //Complete the Job
             client.newCompleteCommand(job.getKey())

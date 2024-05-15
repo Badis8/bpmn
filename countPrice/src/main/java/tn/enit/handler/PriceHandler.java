@@ -72,17 +72,20 @@ public class PriceHandler  implements JobHandler {
             e.printStackTrace();
         }           
         double tp=0;
-        if(messageVariables.get("totalprice") != null)
+        if(inputVariables.get("totalprice") != null)
         {
-          tp=(double)messageVariables.get("totalprice");
+          tp=(double)inputVariables.get("totalprice");
+          System.out.println(tp);   
+
         }
         System.out.println(tp);   
 
         String pdts="";
-        if(messageVariables.get("products") != null)
+        if(inputVariables.get("products") != null)
         {
-            pdts=(String)messageVariables.get("products");
-        }
+            pdts=(String)inputVariables.get("products");
+        }        System.out.println(pdts);   
+
         System.out.println(pdts);   
 
         messageVariables.put("totalprice",tp+ price);
