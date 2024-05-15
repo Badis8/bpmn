@@ -26,7 +26,11 @@ public class SendPayment  implements JobHandler {
         
         final String articlesToSend = "articlesToSend";
  
-
+        final Map<String, Object> inputVariables = job.getVariablesAsMap();
+        final boolean authentificationVerification =  (boolean) inputVariables.get("verification");
+        System.out.println("voici ma variable");
+        System.out.println( authentificationVerification);
+    
         final OAuthCredentialsProvider credentialsProvider =
                 new OAuthCredentialsProviderBuilder()
                         .authorizationServerUrl(ZEEBE_AUTHORIZATION_SERVER_URL)
