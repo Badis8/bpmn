@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-import tn.enit.handler.SendPayment;
+import tn.enit.handler.InformClientHandler;
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.worker.JobWorker;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProvider;
@@ -71,7 +71,7 @@ public class ERPpersistApplication {
 			final JobWorker envoiERP_worker =
 				    client.newWorker()
 				        .jobType(ENVOI_ERP_JOB_TYPE)
-				        .handler(new SendPayment())
+				        .handler(new InformClientHandler())
 				        .timeout(Duration.ofSeconds(WORKER_TIMEOUT).toMillis())
 				        .open();
 			

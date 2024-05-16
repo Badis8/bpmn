@@ -24,7 +24,7 @@ public class sendTransporteur  implements JobHandler {
     @Override
     public void handle(JobClient client, ActivatedJob job) throws Exception {
         
-        final String transporteur = "receptionConteneurs";
+        final String transporteur = "items";
  
 
         final OAuthCredentialsProvider credentialsProvider =

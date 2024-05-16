@@ -16,7 +16,7 @@ import io.camunda.zeebe.client.api.worker.JobHandler;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProvider;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProviderBuilder;
 
-public class SendPayment  implements JobHandler {
+public class InformClientHandler  implements JobHandler {
     private static final String MESSAGE_NAME = "paimentFailed";
 
     private static final String ZEEBE_ADDRESS="9c47333b-d9fc-4f05-92c4-5d21c0b5d55e.bru-2.zeebe.camunda.io:443";
