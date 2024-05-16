@@ -14,6 +14,8 @@ import io.camunda.zeebe.client.api.worker.JobHandler;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProvider;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProviderBuilder;
 
+
+
 public class bankDecision  implements JobHandler {
     private static final String MESSAGE_NAME = "articlesToSend";
 
@@ -80,7 +82,8 @@ public class bankDecision  implements JobHandler {
             }
         }
         else{
-            throw new Exception("Carte de credit non existante");
+            client.newThrowErrorCommand(job.getKey()).errorCode("abc").send().join();
+
         }
 
 

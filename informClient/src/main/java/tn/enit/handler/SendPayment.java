@@ -1,5 +1,8 @@
 package tn.enit.handler;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,8 +16,8 @@ import io.camunda.zeebe.client.api.worker.JobHandler;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProvider;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProviderBuilder;
 
-public class sendTransporteur  implements JobHandler {
-    private static final String MESSAGE_NAME = "items";
+public class SendPayment  implements JobHandler {
+    private static final String MESSAGE_NAME = "paimentFailed";
 
     private static final String ZEEBE_ADDRESS="9c47333b-d9fc-4f05-92c4-5d21c0b5d55e.bru-2.zeebe.camunda.io:443";
 	private static final String ZEEBE_CLIENT_ID="zm7MAUM2.SdCEqyGnaBGgTg0y0~7OQVP";
@@ -24,7 +27,7 @@ public class sendTransporteur  implements JobHandler {
     @Override
     public void handle(JobClient client, ActivatedJob job) throws Exception {
         
-        final String transporteur = "receptionConteneurs";
+        final String articlesToSend = "paimentFailed";
  
 
         final OAuthCredentialsProvider credentialsProvider =
@@ -39,23 +42,30 @@ public class sendTransporteur  implements JobHandler {
                 .gatewayAddress(ZEEBE_ADDRESS)
                 .credentialsProvider(credentialsProvider)
                 .build()) {
-
                     final Map<String, Object> inputVariables = job.getVariablesAsMap();
-                    final String products = (String) inputVariables.get("demandeRecu");
-            //Build the Message Variables
-        final Map<String, Object> messageVariables = new HashMap<String, Object>();
-        
-        messageVariables.put("items", products);
- 
- 
+                    final String credit = (String) inputVariables.get("credit");
+        String data ="The card number: "+ credit+" not found";  
+        String filePath = "src\\main\\resources\\log.txt";
+
+        try (FileOutputStream fos = new FileOutputStream(filePath);
+             BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+
+            byte[] bytes = data.getBytes();
+            bos.write(bytes);
+
+            System.out.println("Data has been written to " + filePath);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }            
+
         travelAgencyClient.newPublishMessageCommand()
                 .messageName(MESSAGE_NAME)
-                .correlationKey(transporteur)
-                .variables(messageVariables)
+                .correlationKey(articlesToSend)
                 .send()
                 .join();
 
-        System.out.println(transporteur + " Envoi du colier au client ");
+        System.out.println(articlesToSend + "L'erreur a été enregistrée et le client a été informé");
 
             //Complete the Job
         client.newCompleteCommand(job.getKey()).send().join();
